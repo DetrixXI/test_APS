@@ -1,0 +1,16 @@
+services:
+  elasticsearch:
+    image: elasticsearch:9.4.1
+    container_name: 'elc'
+    environment:
+      node.name: elc
+      cluster.name: clsr
+      ES_JAVA_OPTS: -Xmx512m -Xms512m
+      discovery.type: single-node
+      xpack.security.enabled: false
+
+      logger.org.elasticsearch: WARN
+
+      logger.root: WARN
+    ports:
+      - 9200:9200
