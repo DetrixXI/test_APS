@@ -8,7 +8,7 @@ from db.db_model import Base
 posts_rubrics_relation = Table(
     "posts_rubrics_relation",
     Base.metadata,
-    Column("post_id", Integer, ForeignKey("posts.id"), primary_key=True),
+    Column("post_id", Integer, ForeignKey("posts.id", ondelete='CASCADE'), primary_key=True),
     Column("rubric_id", Integer, ForeignKey("rubrics.id"), primary_key=True),
 )
 

@@ -1,7 +1,7 @@
-from sqlalchemy import Integer
+from sqlalchemy import Integer, event
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine, AsyncSession
-from db.settings import Settings
+from settings import Settings
 
 DB_URL = Settings.get_db_url()
 
@@ -12,9 +12,16 @@ class DB_helper():
         self.session_gen = async_sessionmaker(bind=self.engine, autocommit=False,
                                             autoflush=False, expire_on_commit=False)
 
+        @event.listens_for(self.engine.sync_engine, "connect")
+        def pragma_for_fk(dbapi_conn, connection_record):
+            cursor = dbapi_conn.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.close()
+    
     async def get_session(self):
         async with self.session_gen() as ses:
             yield ses
+    
 
 db_helper = DB_helper()
 

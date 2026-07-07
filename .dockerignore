@@ -1,0 +1,9 @@
+.venv
+**/__pycache__/
+*.pyc
+.gitignore
+docker_compose
+.dockerignore
+*.db
+test.py
+minitest.py

@@ -13,10 +13,18 @@ class New_post_dto(BaseModel):
 
 class new_document(BaseModel):
     text: str    
-    raw_date: datetime
-    raw_rubric_code: str = "['code_1', 'code_2', ]"
+    raw_date: datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    raw_rubric_code: str = "['code_1']"
 
 class correct_document(BaseModel):
     text: str    
     created_date: datetime
     rubric_codes: list[str]
+
+class response_document(correct_document):
+    id: int
+
+class post_from_db(BaseModel):
+    id: int
+    text: str
+
