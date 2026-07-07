@@ -30,7 +30,7 @@ async def search(id: int,
     except NotFoundError:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-@main_router.put("insert_doc",
+@main_router.put("/insert_doc",
                  summary = "Добавляет документ в бд и индекс эластика")
 async def insert_document(document: new_document, 
                           ses: AsyncSession = Depends(db_helper.get_session),

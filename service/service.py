@@ -5,7 +5,7 @@ import csv
 from pathlib import Path
 
 from models.models import Posts, Rubrics
-from dto.dto import new_document, correct_document, post_from_db, response_document
+from dto.dto import new_document, correct_document, post_from_db, response_document, New_post_dto, New_rubric_dto
 from db.repo_workers import Rubric_worker, Post_worker, Prr_worker
 from es.es_worker import ES_worker
 from settings import Settings
@@ -21,7 +21,7 @@ class DocumentService():
     @staticmethod
     async def __create_correct_document(document: list[str]) -> correct_document:
         suit_date = datetime.strptime(document[1], "%Y-%m-%d %H:%M:%S") if not isinstance(document[1], datetime) else document[1]
-        suit_rubrics = document[2].translate(DEL_TABLE).split(' ')
+        suit_rubrics = document[2].translate(DEL_TABLE).split(' ') if not isinstance(document[2], list) else document[2]
         text = document[0]
         return correct_document(text=text, created_date=suit_date, rubric_codes=suit_rubrics)
 
@@ -98,15 +98,26 @@ class DocumentService():
 
     async def insert_document(self, new_doc: new_document):
         es_worker = ES_worker(self.es_client)
+        post_worker = Post_worker(self.ses)
+        rubric_worker = Rubric_worker(self.ses)
+        prr_woker = Prr_worker(self.ses)
 
         new_doc = list(new_doc.model_dump().values())
         document = await self.__create_correct_document(new_doc)
         rubrics = [Rubrics(rubric_code = el) for el in document.rubric_codes]
-        post = Posts(text=document.text, created_date=document.created_date, rubrics=rubrics)
-        self.ses.add(post)
+
+        post = await post_worker.insert_post(New_post_dto(text=document.text, created_date=document.created_date))
         await self.ses.commit()
 
+        pr_relation = []
+        for rubric_code in document.rubric_codes:
+            rubric = await rubric_worker.insert_rubric(New_rubric_dto(rubric_code=rubric_code))
+            pr_relation.append({'post_id': post.id, "rubric_id": rubric.id})
+
+        await prr_woker.insert_prr_relation(pr_relation)
+
         await es_worker.insert_to_index(post_from_db(text=post.text, id=post.id))
+        return {'Success': True}
         
     async def delete_document_by_pid(self, id: int):
         post_worker = Post_worker(self.ses)

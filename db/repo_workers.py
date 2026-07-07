@@ -91,8 +91,8 @@ class Prr_worker(base_worker):
 ################
 # Insert-ручкa #
 ################
-    async def insert_prr_relation(self, post_rubric_struct: list|dict):
-        """list[post_id, rubric_id] or dict{'post_id':int, 'rubric_id':int}"""
+    async def insert_prr_relation(self, post_rubric_struct: list|list[dict]):
+        """list[post_id, rubric_id] or list['post_id':int, 'rubric_id':int]"""
         if isinstance(post_rubric_struct[0], dict):
             stm = insert(prr).values(post_rubric_struct).returning(prr)   
             return (await self.execute(stm)).scalars().all()

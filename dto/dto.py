@@ -14,7 +14,7 @@ class New_post_dto(BaseModel):
 class new_document(BaseModel):
     text: str    
     raw_date: datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    raw_rubric_code: str = "['code_1']"
+    raw_rubric_code: list[str]
 
 class correct_document(BaseModel):
     text: str    
