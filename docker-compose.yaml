@@ -32,4 +32,4 @@ services:
     command: ['sh', '-c', "alembic upgrade head && python3 fill_db_es.py && python3 app.py"]
     depends_on:
       elasticsearch: 
-        condition: 'service_started'
+        condition: 'service_healthy'

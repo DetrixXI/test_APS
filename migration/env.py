@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from db.db_model import Base, DB_URL
-from models.models import Rubrics, Posts, posts_rubrics_relation 
+from db.models import Rubrics, Posts, posts_rubrics_relation 
 
 
 config = context.config

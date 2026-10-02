@@ -15,7 +15,9 @@ class DB_helper():
         @event.listens_for(self.engine.sync_engine, "connect")
         def pragma_for_fk(dbapi_conn, connection_record):
             cursor = dbapi_conn.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA synchronous=NORMAL")
             cursor.close()
     
     async def get_session(self):

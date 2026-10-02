@@ -1,5 +1,5 @@
 import asyncio
-from service.service import DocumentService
+from service.service import CSV_Parse_Service
 from db.db_model import db_helper
 from es.es_start import es_helper
 from settings import Settings
@@ -15,8 +15,8 @@ async def ins_bulk():
             if await es_client.indices.exists(index=es_helper.index_name):
                 await es_client.indices.delete(index=es_helper.index_name)
             await es_client.indices.create(index=es_helper.index_name, body=es_helper.body)  
-            doc_worker = DocumentService(ses, es_client)
-            await doc_worker.bulk_insertion_documents('posts.csv')
+            csv_loader = CSV_Parse_Service(ses, es_client).fill_bd_by_csv
+            await csv_loader('posts.csv')
 
 def start():
     print("заполнение бд и индекса")

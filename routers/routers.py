@@ -1,43 +1,29 @@
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 
-from service.service import DocumentService
+from service.service import Doc_Search, Doc_Delete
 from db.db_model import db_helper
-from dependencies.dependencies import get_es_client
-from dto.dto import new_document
+from es.es_start import es_helper
 
 main_router= APIRouter(prefix="/test_task")
 
 @main_router.get("/search",
-                 summary = "Производит поиск по словам из запроса по индексу в эластике, ответ ограничен 20 записями")
+                 summary = "Производит поиск по словам из запроса по индексу в эластике, ответ ограничен топ-20 записями по score. Сам топ-20 отсорирован по дате")
 async def search(query: str,
                  ses: AsyncSession = Depends(db_helper.get_session),
-                 es_client: AsyncElasticsearch = Depends(get_es_client)):
-    doc_service = DocumentService(ses=ses, es_client=es_client)
+                 es_client: AsyncElasticsearch = Depends(es_helper.get_es_client)):
+    doc_service = Doc_Search(ses=ses, es_client=es_client)
     res = await doc_service.search_document_by_query(query)
     return {"result": res} if res != [] else {'result': "По запросу ничего не найдено"}
 
 @main_router.delete("/del_by_id", 
-                    summary = "Удаляет записи из posts и posts_rubrics_relation по id документа. Так же удаляет документ из индекса эластика")
-async def search(id: int,
+                    summary = "Удаляет записm из индекс эластика и из БД")
+async def delete(id: int,
                  ses: AsyncSession = Depends(db_helper.get_session),
-                 es_client: AsyncElasticsearch = Depends(get_es_client)):
-    doc_service = DocumentService(ses=ses, es_client=es_client)
-    try:
-        await doc_service.delete_document_by_pid(id=id)
-        return {"Success": True}
-    except NotFoundError:
-        raise HTTPException(status_code=404, detail="Файл не найден")
-
-@main_router.put("/insert_doc",
-                 summary = "Добавляет документ в бд и индекс эластика")
-async def insert_document(document: new_document, 
-                          ses: AsyncSession = Depends(db_helper.get_session),
-                        es_client: AsyncElasticsearch = Depends(get_es_client)):
-    doc_service = DocumentService(ses=ses, es_client=es_client)
-    await doc_service.insert_document(document)
+                 es_client: AsyncElasticsearch = Depends(es_helper.get_es_client)):
+    doc_service = Doc_Delete(ses=ses, es_client=es_client)
+    await doc_service.delete_document_by_id(post_id=id)
     return {"Success": True}
-
 
 
