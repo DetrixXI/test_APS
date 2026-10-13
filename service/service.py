@@ -112,8 +112,8 @@ class Doc_Search():
 
     async def __search_data_in_bd(self, posts_ids: list[int]):
         stm = (select(Posts.id, Posts.created_date, Rubrics.rubric_code, Posts.text)
-               .join(prr, Posts.id == prr.c.post_id)
-               .join(Rubrics, Rubrics.id == prr.c.rubric_id)
+               .join(prr, Posts.id == prr.c.post_id, isouter=True)
+               .join(Rubrics, Rubrics.id == prr.c.rubric_id, isouter=True)
                .where(Posts.id.in_(posts_ids))
                .order_by(Posts.created_date))
         
