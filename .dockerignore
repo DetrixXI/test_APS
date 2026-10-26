@@ -7,3 +7,4 @@ docker_compose
 *.db
 test.py
 minitest.py
+.git
